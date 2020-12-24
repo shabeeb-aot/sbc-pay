@@ -381,11 +381,13 @@ class PaymentTransaction:  # pylint: disable=too-many-instance-attributes, too-m
         transaction_dao.transaction_end_time = datetime.now()
         transaction_dao.pay_response_url = pay_response_url
         transaction_dao = transaction_dao.save()
-
+        current_app.logger.info('payment status code --------------%s-----payment_account.auth_account_id-------- %s',
+                                payment.payment_status_code,payment_account.auth_account_id)
         # Publish message to unlock account if account is locked.
         if payment.payment_status_code == PaymentStatus.COMPLETED.value:
             active_failed_payments = Payment.get_failed_payments(auth_account_id=payment_account.auth_account_id)
-            current_app.logger.info('active_failed_payments %s', active_failed_payments)
+            current_app.logger.info('active_failed_payments %s for account %s', active_failed_payments,
+                                    payment_account.auth_account_id)
             if not active_failed_payments:
                 PaymentAccount.unlock_frozen_accounts(payment.payment_account_id)
 
